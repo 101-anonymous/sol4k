@@ -1,7 +1,5 @@
 # sol4k [![Maven Central](https://img.shields.io/maven-central/v/org.sol4k/sol4k?color=green)](https://central.sonatype.com/artifact/org.sol4k/sol4k) [![Build](https://github.com/sol4k/sol4k/actions/workflows/build.yml/badge.svg)](https://github.com/sol4k/sol4k/actions/workflows/build.yml) [![Style](https://github.com/sol4k/sol4k/actions/workflows/lint.yml/badge.svg)](https://github.com/sol4k/sol4k/actions/workflows/lint.yml) [![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://github.com/sol4k/sol4k/blob/main/LICENSE)
 
-English │ <a href="https://github.com/sol4k/sol4k/blob/main/docs/README_KR.md#sol4k----">한국어</a>
-
 Sol4k is a Kotlin client for Solana that can be used with Java or any other JVM
 language, as well as on Android. It enables communication with an RPC node,
 allowing users to query information from the blockchain, create accounts, read
@@ -13,7 +11,7 @@ experience smooth and straightforward.
 
 Gradle:
 ```groovy
-implementation 'org.sol4k:sol4k:0.5.4'
+implementation 'org.sol4k:sol4k:0.4.2'
 ```
 
 Maven:
@@ -21,7 +19,7 @@ Maven:
 <dependency>
     <groupId>org.sol4k</groupId>
     <artifactId>sol4k</artifactId>
-    <version>0.5.4</version>
+    <version>0.4.2</version>
 </dependency>
 ```
 
@@ -35,8 +33,7 @@ val blockhash = connection.getLatestBlockhash()
 val sender = Keypair.fromSecretKey(secretKeyBytes)
 val receiver = PublicKey("DxPv2QMA5cWR5Xfg7tXr5YtJ1EEStg5Kiag9HhkY1mSx")
 val instruction = TransferInstruction(sender.publicKey, receiver, lamports = 1000)
-val message = TransactionMessage.newMessage(sender.publicKey, blockhash, instruction)
-val transaction = VersionedTransaction(message)
+val transaction = Transaction(blockhash, instruction, feePayer = sender.publicKey)
 transaction.sign(sender)
 val signature = connection.sendTransaction(transaction)
 ```
@@ -152,9 +149,7 @@ Supported APIs:
 - `getHealth`
 - `getIdentity`
 - `getLatestBlockhash`
-- `getMinimumBalanceForRentExemption`
 - `getTokenAccountBalance`
-- `getTokenSupply`
 - `getTransactionCount`
 - `isBlockhashValid`
 - `requestAirdrop`
@@ -163,32 +158,20 @@ Supported APIs:
 
 ### Transactions
 
-Sol4k supports versioned transactions and legacy transactions with
-the `VersionedTransaction` and `Transaction` classes correspondingly.
-Both classes support similar APIs and can be used to build, sign,
-serialize, deserialize and send Solana transactions. It is recommended
-to use `VersionedTransaction` in the new code. A transaction can be
-created by specifying the latest blockhash, one or several instructions,
-and a fee payer.
+A sol4k Transaction is a class that can be used to build, sign, serialize,
+and send Solana transactions. A transaction can be created by specifying
+the latest blockhash, one or several instructions, and a fee payer.
 
 ```kotlin
-val message = TransactionMessage.newMessage(feePayer, blockhash, instruction)
-val transaction = VersionedTransaction(message)
+val transaction = Transaction(blockhash, instruction, feePayer)
 ```
 
-A versioned transaction with multiple instructions:
-
-```kotlin
-val message = TransactionMessage.newMessage(feePayer, blockhash, instructions)
-val transaction = VersionedTransaction(message)
-```
-
-Legacy transaction:
+A transaction with multiple instructions:
 ```kotlin
 val transaction = Transaction(blockhash, instructions, feePayer)
 ```
 
-`Instruction` is an interface that requires having the following data:
+`Instaruction` is an interface that requires having the following data:
 ```kotlin
 interface Instruction {
     val data: ByteArray
@@ -196,7 +179,7 @@ interface Instruction {
     val programId: PublicKey
 }
 ```
-The `Instruction` interface has several implementations such as `TransferInstruction`,
+The `Instaruction` interface has several implementations such as `TransferInstruction`,
 `SplTransferInstruction`, `CreateAssociatedTokenAccountInstruction`, and `BaseInstruction`
 (the one used for sending arbitrary transactions).
 
@@ -226,8 +209,11 @@ val accounts = listOf(
 )
 val joinGameInstruction = BaseInstruction(instructionData, accounts, programId)
 val blockhash = connection.getLatestBlockhash()
-val joinGameMessage = TransactionMessage.newMessage(playerPublicKey, blockhash, joinGameInstruction)
-val joinGameTransaction = VersionedTransaction(joinGameMessage)
+val joinGameTransaction = Transaction(
+    blockhash,
+    instruction = joinGameInstruction,
+    feePayer = playerPublicKey,
+)
 joinGameTransaction.sign(playerKeypair)
 val signature = connection.sendTransaction(joinGameTransaction)
 ```
@@ -246,20 +232,29 @@ val instruction = CreateAssociatedTokenAccountInstruction(
     owner = destinationWallet,
     mint = usdcMintAddress,
 )
-val message = TransactionMessage.newMessage(payerWallet.publicKey, blockhash, instruction)
-val transaction = Transaction(message)
+val transaction = Transaction(
+    blockhash,
+    instruction,
+    feePayer = payerWallet.publicKey,
+)
 transaction.sign(payerWallet)
 val signature = connection.sendTransaction(transaction)
 ```
 
 You can find more examples [in the project tests](https://github.com/sol4k/sol4k/blob/main/src/integration-test/kotlin/org/sol4k/ConnectionTest.kt).
 
+## Notes
+
+This project is actively developed. If you would like to
+contribute, please check the open issues or submit
+a pull request.
+
 ## Development setup
 
 In order to build and run sol4k locally, perform the next steps:
 - Install JDK 11 or newer as a default version of JDK (running `java --version` should print 11 or newer).
 - Install JDK 8, but do not select it as a default. If you're using macOS, you can check for Java 8 in the list by running `/usr/libexec/java_home -V`.
-- Execute `./gradlew publishToMavenLocal`.
+- Execute `./gradlew publishToMavenLocal -x signMavenPublication`.
 
 This would install sol4k in your local Maven repository, and you would be able to import it in other projects (make sure
 `mavenLocal` is among [your Maven repositories](https://github.com/sol4k/sol4k-examples/blob/main/build.gradle#L11-L14)).
@@ -281,7 +276,7 @@ Execute the tests:
 ```
 
 The account needs to have some Devnet SOL as well as Devnet USDC in order to run the tests.
-You can airdrop them both using [this faucet](https://spl-token-faucet.com/?token-name=USDC-Dev).
+You can aridrop them both using [this faucet](https://spl-token-faucet.com/?token-name=USDC-Dev).
 
 If you want to generate a new account for testing, you can do it like this:
 
@@ -296,11 +291,6 @@ If no environment variables are set, end-to-end tests would use `EwtJVgZQGHe9MXm
 to interact with the blockchain. Its secret key is publicly available in the source code, that's why make sure
 it has Devnet USDC and SOL if you want to rely on it.
 
-## Support
+## Contacts
 
-If you like sol4k and want the project to keep going, consider sponsoring it
-[via GitHub Sponsors](https://github.com/sponsors/Shpota) or directly to the wallet address:
-
-```shell
-HNFoca4s9e9XG6KBpaQurVj4Yr6k3GQKhnubRxAGwAZs
-```
+If you have any questions reach out to email `contact@sol4k.org`.

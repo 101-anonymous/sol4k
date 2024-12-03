@@ -1,6 +1,6 @@
 package org.sol4k
 
-data class AccountMeta @JvmOverloads constructor(
+data class AccountMeta(
     val publicKey: PublicKey,
     val signer: Boolean = false,
     val writable: Boolean = false,

@@ -12,10 +12,9 @@ enum class Commitment {
     CONFIRMED,
 
     @SerialName("processed")
-    PROCESSED,
-    ;
+    PROCESSED;
 
     override fun toString(): String {
-        return this.name.lowercase()
+        return this.name.toLowerCase()
     }
 }

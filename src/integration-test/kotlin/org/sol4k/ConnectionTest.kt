@@ -22,7 +22,7 @@ internal class ConnectionTest {
 
         val balance = connection.getBalance(wallet)
 
-        Logger.info("Balance: $balance")
+        println("shouldGetBalance: Balance: $balance")
     }
 
     @Test
@@ -31,7 +31,7 @@ internal class ConnectionTest {
 
         val hash = connection.getLatestBlockhash()
 
-        Logger.info("hash: $hash")
+        println("shouldGetLatestBlockhash: hash: $hash")
     }
 
     @Test
@@ -40,7 +40,7 @@ internal class ConnectionTest {
 
         val blockhash = connection.getLatestBlockhashExtended()
 
-        Logger.info("hash: $blockhash")
+        println("shouldGetLatestBlockhashExtended: hash: $blockhash")
     }
 
     @Test
@@ -53,33 +53,13 @@ internal class ConnectionTest {
         val transaction = Transaction(
             blockhash,
             instruction,
-            sender.publicKey,
+            sender.publicKey
         )
         transaction.sign(sender)
 
         val signature = connection.sendTransaction(transaction)
 
-        Logger.info("signature: $signature")
-    }
-
-    @Test
-    fun shouldSendVersionedTransaction() {
-        val connection = Connection(rpcUrl)
-        val blockhash = connection.getLatestBlockhash()
-        val sender = Keypair.fromSecretKey(Base58.decode(secretKey))
-        val receiver = PublicKey("DxPv2QMA5cWR5Xfg7tXr5YtJ1EEStg5Kiag9HhkY1mSx")
-        val instruction = TransferInstruction(sender.publicKey, receiver, 1000)
-        val message = TransactionMessage.newMessage(
-            sender.publicKey,
-            blockhash,
-            listOf(instruction),
-        )
-        val transaction = VersionedTransaction(message)
-        transaction.sign(sender)
-
-        val signature = connection.sendTransaction(transaction)
-
-        Logger.info("signature: $signature")
+        println("shouldSendTransaction: signature: $signature")
     }
 
     @Test
@@ -92,7 +72,7 @@ internal class ConnectionTest {
         val transaction = Transaction(
             blockhash,
             instruction,
-            sender.publicKey,
+            sender.publicKey
         )
         transaction.sign(sender)
 
@@ -114,7 +94,7 @@ internal class ConnectionTest {
         val transaction = Transaction(
             blockhash,
             instruction,
-            senderWithNoSol.publicKey,
+            senderWithNoSol.publicKey
         )
         transaction.sign(senderWithNoSol)
 
@@ -129,7 +109,7 @@ internal class ConnectionTest {
         val connection = Connection(rpcUrl)
         val blockhash = connection.getLatestBlockhash()
         val sender = Keypair.fromSecretKey(
-            Base58.decode(secretKey),
+            Base58.decode(secretKey)
         )
         val firstReceiver = PublicKey("DxPv2QMA5cWR5Xfg7tXr5YtJ1EEStg5Kiag9HhkY1mSx")
         val secondReceiver = PublicKey("Hb2zfRfn5RwBq2DNWhee2iTVprfGHgiuK7KsiDA4HfMW")
@@ -139,13 +119,13 @@ internal class ConnectionTest {
                 TransferInstruction(sender.publicKey, firstReceiver, 1000),
                 TransferInstruction(sender.publicKey, secondReceiver, 1000),
             ),
-            sender.publicKey,
+            sender.publicKey
         )
         transaction.sign(sender)
 
         val signature = connection.sendTransaction(transaction)
 
-        Logger.info("signature: $signature")
+        println("shouldSendTowInstructionsInOneTransaction: signature: $signature")
     }
 
     @Test
@@ -170,7 +150,7 @@ internal class ConnectionTest {
         transaction.sign(payerWallet)
         val signature = connection.sendTransaction(transaction)
 
-        Logger.info("signature: $signature")
+        println("shouldSendCreateAssociatedTokenTransaction: signature: $signature")
     }
 
     @Test
@@ -180,7 +160,7 @@ internal class ConnectionTest {
 
         val accountInfo = connection.getAccountInfo(usdc)
 
-        Logger.info("accountInfo: $accountInfo")
+        println("shouldGetAccountInfo: accountInfo: $accountInfo")
     }
 
     @Test
@@ -190,27 +170,7 @@ internal class ConnectionTest {
 
         val accountInfo = connection.getAccountInfo(publicKey)
 
-        Logger.info("accountInfo: $accountInfo")
-    }
-
-    @Test
-    fun shouldGetMinimumBalanceForRentExemption() {
-        val connection = Connection(rpcUrl)
-        val space = 50
-
-        val minimumBalanceForRentExemption = connection.getMinimumBalanceForRentExemption(space)
-
-        Logger.info("minimumBalanceForRentExemption $minimumBalanceForRentExemption")
-    }
-
-    @Test
-    fun shouldGetTokenSupply() {
-        val connection = Connection(rpcUrl)
-        val usdc = "Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr"
-
-        val tokenAmount = connection.getTokenSupply(usdc)
-
-        Logger.info("tokenAmount $tokenAmount")
+        println("shouldGetAccountInfoWhenAccountDoesNotExist: accountInfo: $accountInfo")
     }
 
     @Test
@@ -224,21 +184,19 @@ internal class ConnectionTest {
         val splTransferInstruction = SplTransferInstruction(
             holderAssociatedAccount,
             receiverAssociatedAccount,
-            usdc,
             holder.publicKey,
             100,
-            6,
         )
         val transaction = Transaction(
             blockhash,
             splTransferInstruction,
-            holder.publicKey,
+            holder.publicKey
         )
         transaction.sign(holder)
 
         val signature = connection.sendTransaction(transaction)
 
-        Logger.info("signature: $signature")
+        println("shouldSendSpl: signature: $signature")
     }
 
     @Test
@@ -247,7 +205,7 @@ internal class ConnectionTest {
 
         val health = connection.getHealth()
 
-        Logger.info("health: $health")
+        println("shouldGetHealth: health: $health")
     }
 
     // TODO: find a way to fight rate limiting issue for airdrops
@@ -258,7 +216,7 @@ internal class ConnectionTest {
 
         val signature = connection.requestAirdrop(receiver, 1000000000)
 
-        Logger.info("signature: $signature")
+        println("shouldRequestAirdrop: signature: $signature")
     }
 
     @Test
@@ -267,7 +225,7 @@ internal class ConnectionTest {
 
         val identity = connection.getIdentity()
 
-        Logger.info("identity: $identity")
+        println("shouldGetIdentity: identity: $identity")
     }
 
     @Test
@@ -308,7 +266,7 @@ internal class ConnectionTest {
 
         val result = connection.getEpochInfo()
 
-        Logger.info("result: $result")
+        println("shouldGetEpochInfo: result: $result")
     }
 
     @Test
@@ -317,7 +275,7 @@ internal class ConnectionTest {
 
         val count = connection.getTransactionCount()
 
-        Logger.info("count: $count")
+        println("shouldGetTransactionCount: count: $count")
     }
 
     private fun getRpcUrl(): String {
