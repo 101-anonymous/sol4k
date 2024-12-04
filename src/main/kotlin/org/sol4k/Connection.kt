@@ -1,28 +1,20 @@
 package org.sol4k
 
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.encodeToJsonElement
-import org.sol4k.api.AccountInfo
-import org.sol4k.api.Blockhash
-import org.sol4k.api.Commitment
+import org.sol4k.api.*
 import org.sol4k.api.Commitment.FINALIZED
-import org.sol4k.api.EpochInfo
-import org.sol4k.api.Health
 import org.sol4k.api.IsBlockhashValidResult
-import org.sol4k.api.TokenAccountBalance
-import org.sol4k.api.TransactionSimulation
-import org.sol4k.api.TransactionSimulationError
-import org.sol4k.api.TransactionSimulationSuccess
 import org.sol4k.exception.RpcException
 import org.sol4k.rpc.Balance
 import org.sol4k.rpc.BlockhashResponse
 import org.sol4k.rpc.EpochInfoResult
 import org.sol4k.rpc.GetAccountInfoResponse
+import org.sol4k.rpc.GetSignaturesForAddressResponse
 import org.sol4k.rpc.Identity
 import org.sol4k.rpc.RpcErrorResponse
 import org.sol4k.rpc.RpcRequest
@@ -192,6 +184,43 @@ class Connection @JvmOverloads constructor(
         throw IllegalArgumentException("Unable to parse simulation response")
     }
 
+    fun getSignaturesForAddress(accountAddress: PublicKey, limit: Int, before: PublicKey? = null): List<SignaturesForAddress> {
+        val result = rpcCall<List<GetSignaturesForAddressResponse>, JsonElement>(
+            "getSignaturesForAddress",
+            listOf(
+                Json.encodeToJsonElement(accountAddress.toBase58()),
+                Json.encodeToJsonElement(
+                    mapOf(
+                        // commitment string optional
+                        // minContextSlot number optional -- The minimum slot that the request can be evaluated at
+                        // limit number optional, Default: 1000 -- maximum transaction signatures to return (between 1 and 1,000).
+                        "limit" to Json.encodeToJsonElement(limit),
+                        // before string optional -- start searching backwards from this transaction signature. If not provided the search starts from the top of the highest max confirmed block.
+                        "before" to before ?. let {
+                            Json.encodeToJsonElement(before.toString())
+                        },
+                        // until string optional -- search until this transaction signature, if found before limit reached
+                    )
+                ),
+            ),
+        )
+        return result.map {
+            // Resolve: [length] memo
+            val memo = it.memo ?. let { memo ->
+                val plainMemo = memo.replaceFirst(Regex("""\[\d+] """), "")
+                plainMemo
+            }
+            SignaturesForAddress(
+                signature = it.signature,
+                slot = it.slot,
+                err = it.err,
+                memo = memo,
+                blockTime = it.blockTime,
+                confirmationStatus = it.confirmationStatus,
+            )
+        }
+    }
+
     private inline fun <reified T, reified I : Any> rpcCall(method: String, params: List<I>): T {
         val connection = URL(rpcUrl).openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
@@ -204,7 +233,7 @@ class Connection @JvmOverloads constructor(
             it.write(body.toByteArray())
         }
         val responseBody = connection.inputStream.use {
-            BufferedReader(InputStreamReader(it)).use { reader ->
+            BufferedReader(InputStreamReader(it, Charsets.UTF_8)).use { reader ->
                 reader.readText()
             }
         }

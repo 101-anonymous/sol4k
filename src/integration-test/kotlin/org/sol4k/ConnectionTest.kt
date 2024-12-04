@@ -278,6 +278,17 @@ internal class ConnectionTest {
         println("shouldGetTransactionCount: count: $count")
     }
 
+    @Test
+    fun shouldGetSignaturesForAddress() {
+        val connection = Connection(rpcUrl)
+
+        // val result = connection.getSignaturesForAddress(PublicKey("BSzG62Khqw5pbbWPmoe8iZekExekFQBJmjYhiXhcVvtS"), 1)
+        val result = connection.getSignaturesForAddress(PublicKey("BSzG62Khqw5pbbWPmoe8iZekExekFQBJmjYhiXhcVvtS"), 10, PublicKey("5MvXGPaqLix4eGv3iCou9JTQCYeCfctdtDfTxyQGFYS3EQChWT2u7zrtfcseHi2eDpfVEFf1zD6xtimgZcmhkRF2"))
+
+        println("shouldGetSignaturesForAddress: result:")
+        println(result.joinToString("\n  ", "  "))
+    }
+
     private fun getRpcUrl(): String {
         val rpcUrl = System.getProperty("E2E_RPC_URL")
         return if (rpcUrl.isNullOrEmpty()) "https://api.devnet.solana.com" else rpcUrl
