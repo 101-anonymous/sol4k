@@ -289,6 +289,16 @@ internal class ConnectionTest {
         println(result.joinToString("\n  ", "  "))
     }
 
+    @Test
+    fun shouldGetTransaction() {
+        val connection = Connection(rpcUrl)
+
+        val result = connection.getTransaction(PublicKey("5MvXGPaqLix4eGv3iCou9JTQCYeCfctdtDfTxyQGFYS3EQChWT2u7zrtfcseHi2eDpfVEFf1zD6xtimgZcmhkRF2"))
+
+        println("shouldGetTransaction: result:")
+        println(result)
+    }
+
     private fun getRpcUrl(): String {
         val rpcUrl = System.getProperty("E2E_RPC_URL")
         return if (rpcUrl.isNullOrEmpty()) "https://api.devnet.solana.com" else rpcUrl

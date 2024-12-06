@@ -10,6 +10,7 @@ import org.sol4k.api.*
 import org.sol4k.api.Commitment.FINALIZED
 import org.sol4k.api.IsBlockhashValidResult
 import org.sol4k.exception.RpcException
+import org.sol4k.rpc.*
 import org.sol4k.rpc.Balance
 import org.sol4k.rpc.BlockhashResponse
 import org.sol4k.rpc.EpochInfoResult
@@ -197,7 +198,7 @@ class Connection @JvmOverloads constructor(
                         "limit" to Json.encodeToJsonElement(limit),
                         // before string optional -- start searching backwards from this transaction signature. If not provided the search starts from the top of the highest max confirmed block.
                         "before" to before ?. let {
-                            Json.encodeToJsonElement(before.toString())
+                            Json.encodeToJsonElement(before.toBase58())
                         },
                         // until string optional -- search until this transaction signature, if found before limit reached
                     )
@@ -219,6 +220,27 @@ class Connection @JvmOverloads constructor(
                 confirmationStatus = it.confirmationStatus,
             )
         }
+    }
+
+    fun getTransaction(signature: PublicKey, maxSupportedTransactionVersion: Int? = null): org.sol4k.api.Transaction {
+        val result = rpcCall<GetTransactionResponse, JsonElement>(
+            "getTransaction",
+            listOf(
+                Json.encodeToJsonElement(signature.toBase58()),
+                Json.encodeToJsonElement(
+                    mapOf(
+                        // commitment string optional
+                        // maxSupportedTransactionVersion number optional -- Set the max transaction version to return in responses. If the requested transaction is a higher version, an error will be returned. If this parameter is omitted, only legacy transactions will be returned, and any versioned transaction will prompt the error.
+                        "maxSupportedTransactionVersion" to maxSupportedTransactionVersion ?. let {
+                            Json.encodeToJsonElement(maxSupportedTransactionVersion)
+                        },
+                        // encoding string optional, Default: json, Values: json jsonParsed base64 base58 -- Encoding for the returned Transaction
+                        "encoding" to Json.encodeToJsonElement("json"),
+                    )
+                ),
+            ),
+        )
+        return org.sol4k.api.Transaction.fromGetTransactionResponse(result)
     }
 
     private inline fun <reified T, reified I : Any> rpcCall(method: String, params: List<I>): T {
