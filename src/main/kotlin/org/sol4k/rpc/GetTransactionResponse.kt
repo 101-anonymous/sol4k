@@ -65,7 +65,7 @@ data class TokenBalance(
     val mint: String,
     val owner: String? = null,
     val programId: String? = null,
-    val uiTokenAmount: UITokenAmount,
+    val uiTokenAmount: UITokenAmount? = null,
 )
 
 @Serializable

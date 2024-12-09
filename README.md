@@ -273,6 +273,7 @@ Execute the tests:
 
 ```shell
 ./gradlew integrationTest
+./gradlew integrationTest --tests org.sol4k.ConnectionTest.shouldGetTransaction
 ```
 
 The account needs to have some Devnet SOL as well as Devnet USDC in order to run the tests.
