@@ -73,6 +73,6 @@ data class UITokenAmount(
     val amount: String,
     val decimals: Int,
     /** DEPRECATED */
-    val uiAmount: Long,
+    val uiAmount: Long? = null,
     val uiAmountString: String,
 )

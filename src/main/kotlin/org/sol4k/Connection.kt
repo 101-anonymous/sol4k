@@ -26,6 +26,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.math.BigInteger
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 import java.util.Base64
 
@@ -244,7 +245,7 @@ class Connection @JvmOverloads constructor(
     }
 
     private inline fun <reified T, reified I : Any> rpcCall(method: String, params: List<I>): T {
-        val connection = URL(rpcUrl).openConnection() as HttpURLConnection
+        val connection = URI(rpcUrl).toURL().openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
         connection.doOutput = true
@@ -263,7 +264,8 @@ class Connection @JvmOverloads constructor(
         try {
             val (result) = jsonParser.decodeFromString<RpcResponse<T>>(responseBody)
             return result
-        } catch (_: SerializationException) {
+        } catch (err: SerializationException) {
+            err.printStackTrace()
             val (error) = jsonParser.decodeFromString<RpcErrorResponse>(responseBody)
             throw RpcException(error.code, error.message, responseBody)
         }

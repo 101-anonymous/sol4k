@@ -293,7 +293,8 @@ internal class ConnectionTest {
     fun shouldGetTransaction() {
         val connection = Connection(rpcUrl)
 
-        val result = connection.getTransaction(PublicKey("5MvXGPaqLix4eGv3iCou9JTQCYeCfctdtDfTxyQGFYS3EQChWT2u7zrtfcseHi2eDpfVEFf1zD6xtimgZcmhkRF2"))
+        // val result = connection.getTransaction(PublicKey("5MvXGPaqLix4eGv3iCou9JTQCYeCfctdtDfTxyQGFYS3EQChWT2u7zrtfcseHi2eDpfVEFf1zD6xtimgZcmhkRF2")) // SOL
+        val result = connection.getTransaction(PublicKey("2YJNNm9sP6gYWhP1BSjNeonUpQXs2pvwtEzcnLD9WQo7P6uQHVhi5dnGtw22vWZfsGvcxusM8MraHBZNAZnKZciM")) // Create token account, postTokenBalances[0].uiTokenAmount.uiAmount: null
 
         println("shouldGetTransaction: result:")
         println(result)

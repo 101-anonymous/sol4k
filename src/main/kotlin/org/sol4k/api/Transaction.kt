@@ -30,9 +30,11 @@ data class Transaction(
             val preTokenBalances = tx.meta?.preTokenBalances ?: emptyList()
             val postTokenBalances = tx.meta?.postTokenBalances ?: emptyList()
             val tokenBalanceChange = ArrayList<Triple<String?, String, String>>(postTokenBalances.size)
-            postTokenBalances.forEachIndexed { index, it ->
-                val post = it.uiTokenAmount.uiAmountString.toDouble()
-                val pre = preTokenBalances[index].uiTokenAmount.uiAmountString.toDouble()
+            postTokenBalances.forEachIndexed { _, it ->
+                val post = it.uiTokenAmount.uiAmountString.toDoubleOrNull() ?: 0.0
+                // val pre = preTokenBalances[index].uiTokenAmount.uiAmountString.toDouble() // Error: preTokenBalances=[]
+                val preTokenBalance = preTokenBalances.find { pre -> pre.owner == it.owner }
+                val pre = preTokenBalance?.uiTokenAmount?.uiAmountString?.toDoubleOrNull() ?: 0.0
                 (post - pre).let { change ->
                     if (change != 0.0)
                         tokenBalanceChange.add(Triple(it.owner, it.mint, it.uiTokenAmount.uiAmountString))
