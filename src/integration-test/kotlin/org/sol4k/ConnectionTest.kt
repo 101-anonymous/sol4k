@@ -300,6 +300,26 @@ internal class ConnectionTest {
         println(result)
     }
 
+    @Test
+    fun shouldGetTransactionV0() {
+        val connection = Connection("https://api.mainnet-beta.solana.com")
+
+        val result = connection.getTransaction(PublicKey("5MdATd8GqakZQDdj5Wy124kNt4KBw64uZsubKNHA1RfRY4RhuKxLf8uYKThHee1BiiYgSoJajGR63eWMxu2C6781"), 1) // Version: V0, not LEGACY
+
+        println("shouldGetTransactionV0: result:")
+        println(result)
+    }
+
+    @Test
+    fun shouldGetTokenTransaction() {
+        val connection = Connection("https://api.mainnet-beta.solana.com")
+
+        val result = connection.getTransaction(PublicKey("3rouks2VHBXDf5HhcnWr4k8ai6HGRyqmm8QZCJAMWdq3oUowrsgBAm2NBAwBE1ch5e89WyvLXVrvVugdyL29xEWj"))
+
+        println("shouldGetTokenTransaction: result:")
+        println(result)
+    }
+
     private fun getRpcUrl(): String {
         val rpcUrl = System.getProperty("E2E_RPC_URL")
         return if (rpcUrl.isNullOrEmpty()) "https://api.devnet.solana.com" else rpcUrl

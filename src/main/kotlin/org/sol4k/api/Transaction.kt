@@ -9,7 +9,7 @@ data class Transaction(
     val fee: Long,
     val feePayer: String,
     val balanceChange: List<Pair<String, Long>>,
-    val tokenBalanceChange: List<Triple<String?, String, String>>,
+    val tokenBalanceChange: List<Triple<String?, String, Double>>,
 ) {
     companion object {
         @JvmStatic
@@ -29,7 +29,7 @@ data class Transaction(
 
             val preTokenBalances = tx.meta?.preTokenBalances ?: emptyList()
             val postTokenBalances = tx.meta?.postTokenBalances ?: emptyList()
-            val tokenBalanceChange = ArrayList<Triple<String?, String, String>>(postTokenBalances.size)
+            val tokenBalanceChange = ArrayList<Triple<String?, String, Double>>(postTokenBalances.size)
             postTokenBalances.forEachIndexed { _, it ->
                 val post = it.uiTokenAmount.uiAmountString.toDoubleOrNull() ?: 0.0
                 // val pre = preTokenBalances[index].uiTokenAmount.uiAmountString.toDouble() // Error: preTokenBalances=[]
@@ -37,7 +37,7 @@ data class Transaction(
                 val pre = preTokenBalance?.uiTokenAmount?.uiAmountString?.toDoubleOrNull() ?: 0.0
                 (post - pre).let { change ->
                     if (change != 0.0)
-                        tokenBalanceChange.add(Triple(it.owner, it.mint, it.uiTokenAmount.uiAmountString))
+                        tokenBalanceChange.add(Triple(it.owner, it.mint, change))
                 }
             }
 
